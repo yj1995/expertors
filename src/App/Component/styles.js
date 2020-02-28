@@ -1,0 +1,64 @@
+const styles = theme => ({
+    margin: {
+        margin: theme.spacing.unit * 2,
+    },
+    padding: {
+        padding: theme.spacing.unit
+    },
+    fieldError: {
+        color: 'red',
+        fontSize: 10
+    },
+    AdminTop: {
+        backgroundColor: '#1fc8db',
+        height: 50
+    },
+    AdminTitle: {
+        height: '100%',
+        justifyContent: 'center',
+        margin: 0
+    },
+    layout: {
+        display: 'block',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'black',
+        opacity: 0.7
+    },
+    EditName: {
+        position: 'relative',
+        width: 400,
+        minHeight: 130,
+        top: '50%',
+        padding: 10,
+        textAlign: 'center',
+        left: '50%',
+        background: 'white',
+        transform: 'translate(-50%,-50%)'
+    },
+    EditNameInput: {
+        width: '60%',
+        height: 25
+    },
+    buttonLayout: {
+        position: 'relative',
+        margin: 10
+    },
+    buttonStyle: {
+        minWidth: 80,
+        minHeight: 30,
+        margin: 10,
+        fontSize: '1rem',
+        fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
+        fontWeight: 400,
+        background: '#1fc8db',
+        padding: 10,
+        color: 'black',
+        border: 0,
+        letterSpacing: '0.00938em'
+    }
+});
+export { styles };
