@@ -36,9 +36,9 @@ class Parent extends Component {
         {/* <Start /> */}
         <BrowserRouter>
           <Switch>
-            <Route path={`${pathName}Admin1`} component={login} />
+            <Route exact path={`${pathName}`} component={login} />
             <Route path={`${pathName}Register`} component={Register} />
-            <Route exact path={`${pathName}`} component={Admin} />
+            <Route path={`${pathName}Admin`} component={Admin} />
             <Route path={`${pathName}Flow`} component={Flow} />
             {/* <Route path={`${pathName}CreateRoom`} component={CreateRoom} />
             <Route path={`${pathName}JoinRoom`} component={JoinRoom} />

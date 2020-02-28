@@ -59,6 +59,13 @@ const styles = theme => ({
         color: 'black',
         border: 0,
         letterSpacing: '0.00938em'
+    },
+    FlowTop: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        background: '#1fc8db'
     }
 });
 export { styles };

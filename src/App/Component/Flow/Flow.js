@@ -8,7 +8,7 @@ class Flow extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            dropList: ['drop 1', 'drop 2', 'drop 3','drop 4', 'drop 5', 'drop 6','drop 7', 'drop 8', 'drop 9'],
+            dropList: ['drop 1', 'drop 2', 'drop 3', 'drop 4', 'drop 5', 'drop 6', 'drop 7', 'drop 8', 'drop 9'],
             dragList: ['drag 1', 'drag 2', 'drag 3']
         }
         const grid = 8;
@@ -32,6 +32,7 @@ class Flow extends Component {
         this.getListStyle = (isDraggingOver, i) => ({
             background: isDraggingOver ? 'lightblue' : 'white',
             minWidth: 200,
+            wordBreak: 'break-word',
             height: 'auto',
             padding: 8,
             border: '1px solid rgba(0,0,0,0.26)'
@@ -43,23 +44,57 @@ class Flow extends Component {
         console.log(this);
         return (
             <React.Fragment>
-                <div className={classes.AdminTop}>
+                <div className={classes.FlowTop}>
                     <Grid container spacing={8} alignItems="center" className={classes.AdminTitle}>
                         {history.location.select} Flow Chart
                     </Grid>
                 </div>
                 <div
+                    className="pipelineTop"
+                    style={{
+                        display: 'flex',
+                        zIndex: 2,
+                        position: 'relative',
+                        marginTop: 50
+                    }}
+                >
+                    {this.state.dropList.map((val, i) => {
+                        return (
+                            <div
+                                keys={val + i}
+                                style={{
+                                    minWidth: 200,
+                                    backgroundColor: 'rgb(72, 133, 237)',
+                                    padding: 8,
+                                    wordBreak: 'break-word',
+                                    border: '1px solid rgba(192,192,192,1)',
+                                    color: 'white'
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        position: 'relative',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)'
+                                    }}
+                                >
+                                    {val}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+                <div
                     style={{
                         display: 'flex',
                         width: '100%',
-                        paddingTop: 82,
                         minHeight: 300
                     }}
                 >
                     <DragDropContext onDragEnd={this.onDragEnd}>
                         {this.state.dropList.map((value, i) => {
                             return (<Droppable
-                                
+
                                 droppableId={value}
                                 key={value + i}>
                                 {(provided, snapshot) => (
