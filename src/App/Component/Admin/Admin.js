@@ -6,14 +6,16 @@ import _ from 'lodash';
 import { styles } from '../styles';
 import schema from './schema';
 import validate from 'validate.js';
+import axios from 'axios';
 
 class Admin extends Component {
     constructor(props) {
         super(props)
+        this.AdminId = this.props.history.location._id;
         this.state = {
             edit: false,
             delete: false,
-            Manager: ['items1', 'items2', 'items3'],
+            Manager: '',
             disable: true,
             add: false,
             values: {
@@ -51,8 +53,22 @@ class Admin extends Component {
     submit() {
         const data = document.querySelectorAll('input#username')[0].value;
         const { Manager } = this.state;
-        Manager.push(data);
-        this.setState({ Manager, add: false });
+        const value = {
+            managerName: data,
+            AdminId: this.AdminId,
+            data: []
+        };
+        Manager.push(value);
+        axios.post(`http://localhost:3000/api/addManager`, {
+            body: value
+        })
+            .then((res) => {
+                Manager[Manager.length - 1]._id = res.data;
+                this.setState({ Manager, add: false, isValid: false });
+                document.querySelectorAll('input').forEach((val, i) => {
+                    val.value = '';
+                });
+            });
     }
 
     add() {
@@ -129,7 +145,7 @@ class Admin extends Component {
                     </Grid>
                     <Grid container justify="center" style={{ marginTop: '10px' }}>
                         <Button variant="outlined" color="primary" style={{ textTransform: "none" }} onClick={this.submit} disabled={!isValid}>Submit</Button>
-                        {/* <Button variant="outlined" color="primary" style={{ textTransform: "none", marginLeft: 15 }} onClick={this.clear}>Clear</Button> */}
+                        <Button variant="outlined" color="primary" style={{ textTransform: "none", marginLeft: 15 }} onClick={this.cancel} id="add">Cancel</Button>
                     </Grid>
                 </div>
             </Paper>
@@ -143,27 +159,32 @@ class Admin extends Component {
     }
 
     ok() {
-        const Manager = [];
-        this.state.Manager.forEach((val, i) => {
-            if (val !== this.selectTile) {
-                Manager.push(val);
+        const { Manager } = this.state;
+        const list = [];
+        Manager.forEach((val, i) => {
+            if (val._id === this.selectTile) {
+                axios.post(`http://localhost:3000/api/deleteManager`, {
+                    _id: this.selectTile
+                });
+            } else {
+                list.push(val);
             }
         });
-        this.setState({ Manager, delete: false });
+        this.setState({ Manager: list, delete: false });
     }
 
     makeManagerList() {
         let data = [];
         this.state.Manager.forEach((val, i) => {
             data.push(
-                <Box key={val + ' ' + i} p={1} style={{ margin: 10, minWidth: 150, textAlign: 'center' }} bgcolor="background.paper">
+                <Box key={val._id + ' ' + i} p={1} style={{ margin: 10, minWidth: 150, textAlign: 'center' }} bgcolor="background.paper">
                     <Grid container alignItems="flex-end" style={{ width: '100%', justifiedContent: "center" }}>
                         <Grid item style={{ width: '68%', wordBreak: 'break-word' }} onClick={this.select} id='items'>
-                            {val}
+                            {val.managerName}
                         </Grid>
                         <Grid item>
-                            <Edit onClick={this.select} type={val} id="edit" />
-                            <Delete onClick={this.select} type={val} id="delete" />
+                            <Edit onClick={this.select} type={val._id} id="edit" />
+                            <Delete onClick={this.select} type={val._id} id="delete" />
                         </Grid>
                     </Grid>
                 </Box>
@@ -174,13 +195,16 @@ class Admin extends Component {
 
     save() {
         const changeValue = document.querySelectorAll('input')[0].value;
+        const { Manager } = this.state;
         document.querySelectorAll('input')[0].value = '';
-        const Manager = [];
-        this.state.Manager.forEach((val, i) => {
-            if (val === this.selectTile) {
-                Manager.push(changeValue);
-            } else {
-                Manager.push(val);
+        Manager.forEach((val, i) => {
+            if (val._id === this.selectTile) {
+                val.managerName = changeValue;
+                val._id = this.selectTile;
+                axios.post(`http://localhost:3000/api/updateManager`, {
+                    _id: this.selectTile,
+                    data: val
+                });
             }
         });
         this.setState({ Manager, edit: false, disable: true });
@@ -202,7 +226,7 @@ class Admin extends Component {
             pathName = '';
             this.props.history.push({
                 pathname: `${pathName}Flow`,
-                select: e.currentTarget.innerHTML
+                select: this.selectTile
             });
         }
     }
@@ -215,6 +239,17 @@ class Admin extends Component {
     edit(e) {
         this.setState({ edit: true });
         this.selectTile = e.currentTarget.getAttribute('type');
+        console.log(this.selectTile);
+    }
+
+    componentDidMount() {
+        axios.get(`http://localhost:3000/api/getManager`)
+            .then((res) => {
+                const Manager = _.filter(res.data, (val, i) => {
+                    return val.AdminId === this.AdminId
+                })
+                this.setState({ Manager });
+            });
     }
 
     render() {

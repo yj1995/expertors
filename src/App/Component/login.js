@@ -3,6 +3,7 @@ import { Paper, withStyles, Grid, TextField, Button, FormControlLabel, Checkbox 
 import { Face, Fingerprint } from '@material-ui/icons';
 import _ from 'lodash';
 import { styles } from './styles';
+import axios from 'axios';
 
 class login extends Component {
     constructor(props) {
@@ -30,7 +31,25 @@ class login extends Component {
             }
         });
         if (count === data.length) {
-            console.log('login');
+            axios.get(`http://localhost:3000/api/login`)
+                .then((res) => {
+                    if (res.data.length) {
+                        res.data.forEach((val, i) => {
+                            if (val.username === data[0].value) {
+                                if (val.password === data[1].value) {
+                                    let pathName = window.location.pathname;
+                                    pathName = '';
+                                    this.props.history.push({
+                                        pathname: `${pathName}Admin`,
+                                        _id: val._id
+                                    });
+                                }
+                            }
+                        })
+                    } else {
+                        alert('Not a single user available plz register');
+                    }
+                });
         }
     }
 
@@ -71,9 +90,9 @@ class login extends Component {
                                 />
                             } label="Remember me" />
                         </Grid>
-                        <Grid item>
+                        {/* <Grid item>
                             <Button disableFocusRipple disableRipple style={{ textTransform: "none" }} variant="text" color="primary">Forgot password ?</Button>
-                        </Grid>
+                        </Grid> */}
                     </Grid>
                     <Grid container justify="center" style={{ marginTop: '10px' }}>
                         <Button variant="outlined" color="primary" style={{ textTransform: "none" }} onClick={this.login}>Login</Button>

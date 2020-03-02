@@ -17,8 +17,8 @@ const options = {
     socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     family: 4 // Use IPv4, skip trying IPv6
 };
-// const client = new MongoClient(url, options);
-router.get('/', (req, res, next) => {
+
+router.get('/getManager', (req, res, next) => {
     let resultArray = [];
     mongoose.connect(url, options, function (err, db) {
         assert.equal(null, err);
@@ -33,19 +33,46 @@ router.get('/', (req, res, next) => {
     })
 });
 
-router.post('/add', () => {
+router.get('/login', (req, res, next) => {
+    let resultArray = [];
     mongoose.connect(url, options, function (err, db) {
         assert.equal(null, err);
-        let cursor = db.collection('Manager');
+        let cursor = db.collection('Login').find();
+        cursor.forEach((doc, err) => {
+            assert.equal(null, err);
+            resultArray.push(doc);
+        }, () => {
+            db.close();
+            res.send(resultArray);
+        });
+    })
+});
+
+router.post('/register', (req, res, next) => {
+    mongoose.connect(url, options, function (err, db) {
+        assert.equal(null, err);
+        let cursor = db.collection('Login');
         cursor.insertOne(req.body.body, (err, result) => {
             assert.equal(null, err);
-            res.send('insert');
+            res.send(result["ops"][0]["_id"]);
             db.close();
         });
     })
 });
 
-router.post('/delete', (req, res, next) => {
+router.post('/addManager', (req, res, next) => {
+    mongoose.connect(url, options, function (err, db) {
+        assert.equal(null, err);
+        let cursor = db.collection('Manager');
+        cursor.insertOne(req.body.body, (err, result) => {
+            assert.equal(null, err);
+            res.send(result["ops"][0]["_id"]);
+            db.close();
+        });
+    })
+});
+
+router.post('/deleteManager', (req, res, next) => {
     mongoose.connect(url, options, function (err, db) {
         assert.equal(null, err);
         let _id = req.body.body;
@@ -59,12 +86,13 @@ router.post('/delete', (req, res, next) => {
     })
 });
 
-router.post('/update', (req, res, next) => {
+router.post('/updateManager', (req, res, next) => {
     mongoose.connect(url, options, function (err, db) {
         assert.equal(null, err);
-        let _id = req.body.body._id;
+        console.log(req.body);
+        let _id = req.body._id;
         let set = {
-            data: req.body.body.data
+            data: req.body.data
         };
         let cursor = db.collection('Manager');
         cursor.updateOne({ _id }, { $set: set }, (err, result) => {

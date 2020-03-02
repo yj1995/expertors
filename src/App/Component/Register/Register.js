@@ -5,7 +5,8 @@ import _ from 'lodash';
 import { styles } from '../styles';
 import schema from './schema';
 import validate from 'validate.js';
-
+import axios from 'axios';
+import { makeid } from '../../random';
 
 class Register extends Component {
     constructor(props) {
@@ -31,6 +32,7 @@ class Register extends Component {
                 rematch: null
             },
             isValid: false,
+            data: ''
         };
 
         _.bindAll(this, [
@@ -68,19 +70,47 @@ class Register extends Component {
     };
 
     submit() {
-        if (this.state.values.rematch === this.state.values.password) {
-            let pathName = window.location.pathname;
-            pathName = '';
-            this.props.history.push({
-                pathname: `${pathName}Admin`
-            });
+        let count = 0;
+        console.log(this.state.data);
+        this.state.data.forEach((val, i) => {
+            console.log(val.username === this.state.values.username, val.username);
+            if (val.username === this.state.values.username) {
+                count++;
+            }
+        });
+        if (!count) {
+            if (this.state.values.rematch === this.state.values.password) {
+                const body = { username: this.state.values.username, password: this.state.values.password, _id: makeid(20) };
+                console.log(body);
+                axios.post(`http://localhost:3000/api/register`, {
+                    body
+                })
+                    .then((res) => {
+                        console.log(res);
+                        let pathName = window.location.pathname;
+                        pathName = '';
+                        this.props.history.push({
+                            pathname: `${pathName}Admin`,
+                            _id: res.data
+                        });
+                    });
+            } else {
+                const newState = { ...this.state };
+                newState.errors['rematch'] = ["Password Not Matching"];
+                this.setState(newState);
+            }
         } else {
-            const newState = { ...this.state };
-            newState.errors['rematch'] = ["Password Not Matching"];
-            this.setState(newState);
+            alert('User already available');
         }
     }
 
+    componentDidMount() {
+        axios.get(`http://localhost:3000/api/login`)
+            .then((res) => {
+                console.log(res.data);
+                this.setState({ data: res.data });
+            });
+    }
     render() {
         const { classes } = this.props;
         const { values, isValid, touched, errors } = this.state;
