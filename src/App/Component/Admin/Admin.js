@@ -179,7 +179,7 @@ class Admin extends Component {
             data.push(
                 <Box key={val._id + ' ' + i} p={1} style={{ margin: 10, minWidth: 150, textAlign: 'center' }} bgcolor="background.paper">
                     <Grid container alignItems="flex-end" style={{ width: '100%', justifiedContent: "center" }}>
-                        <Grid item style={{ width: '68%', wordBreak: 'break-word' }} onClick={this.select} id='items'>
+                        <Grid item style={{ width: '68%', wordBreak: 'break-word' }} type={val._id} onClick={this.select} id='items'>
                             {val.managerName}
                         </Grid>
                         <Grid item>
@@ -213,10 +213,15 @@ class Admin extends Component {
     cancel(e) {
         const type = e.currentTarget.getAttribute('id');
         this.setState({ [type]: false, disable: true });
+        document.querySelectorAll('input').forEach((val) => {
+            val.value = '';
+        });
     }
 
     select(e) {
         e.preventDefault();
+        this.selectTile = e.currentTarget.getAttribute('type');
+        console.log(e.currentTarget.getAttribute('type'));
         if (e.currentTarget.getAttribute('id') === 'edit') {
             this.edit(e);
         } else if (e.currentTarget.getAttribute('id') === 'delete') {
@@ -224,22 +229,24 @@ class Admin extends Component {
         } else {
             let pathName = window.location.pathname;
             pathName = '';
+            const value = _.find(this.state.Manager, (val) => {
+                console.log(val._id, 'asdghgads', this.selectTile);
+                return val._id === this.selectTile;
+            })
             this.props.history.push({
                 pathname: `${pathName}Flow`,
-                select: this.selectTile
+                select: this.selectTile,
+                value
             });
         }
     }
 
     delete(e) {
         this.setState({ delete: true });
-        this.selectTile = e.currentTarget.getAttribute('type');
     }
 
     edit(e) {
         this.setState({ edit: true });
-        this.selectTile = e.currentTarget.getAttribute('type');
-        console.log(this.selectTile);
     }
 
     componentDidMount() {
@@ -248,6 +255,7 @@ class Admin extends Component {
                 const Manager = _.filter(res.data, (val, i) => {
                     return val.AdminId === this.AdminId
                 })
+                console.log(Manager);
                 this.setState({ Manager });
             });
     }
@@ -261,25 +269,23 @@ class Admin extends Component {
                         Admin Portal
                 </Grid>
                 </div>
-                <div>
-                    <Grid container spacing={8} alignItems="center" className={classes.AdminTitle} style={{ height: 50 }}>
+                <div className={classes.AdminAdd}>
+                    <Grid container spacing={8} alignItems="center" className={classes.AdminTitle} style={{ height: '100%' }}>
                         List of Manager
                         <Button variant="outlined" color="primary" style={{ textTransform: "none" }} className={classes.buttonStyle} id='Add' onClick={this.add}>Add New Manager</Button>
                     </Grid>
                 </div>
-                <div>
-                    <Box
-                        display="flex"
-                        flexWrap="wrap"
-                        p={1}
-                        m={1}
-                        css={{ minWidth: 300 }}
-                    >
-                        {this.state.Manager.length ?
-                            this.makeManagerList()
-                            : <div>No Manager Present</div>}
-                    </Box>
-                </div>
+                <Box
+                    display="flex"
+                    flexWrap="wrap"
+                    p={1}
+                    m={1}
+                    css={{ minWidth: 300, position: 'relative', top: 119, maxHeight: '80%', overflow: 'auto' }}
+                >
+                    {this.state.Manager.length ?
+                        this.makeManagerList()
+                        : <div>No Manager Present</div>}
+                </Box>
                 <div className={classes.layout} style={{ display: this.state.edit ? 'block' : 'none' }}>
                     <div className={classes.EditName}>
                         Enter New Manager Name

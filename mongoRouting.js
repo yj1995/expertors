@@ -75,12 +75,10 @@ router.post('/addManager', (req, res, next) => {
 router.post('/deleteManager', (req, res, next) => {
     mongoose.connect(url, options, function (err, db) {
         assert.equal(null, err);
-        let _id = req.body.body;
-        console.log(req.body.body);
         let cursor = db.collection('Manager');
-        cursor.deleteOne({ _id }, (err, result) => {
+        cursor.deleteOne({ _id:  mongoose.Types.ObjectId(req.body._id) }, (err, result) => {
             assert.equal(null, err);
-            res.send('delete');
+            res.send(result);
             db.close();
         });
     })

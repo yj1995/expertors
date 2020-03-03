@@ -3,24 +3,21 @@ import _ from 'lodash';
 import { styles } from '../styles';
 import { Paper, withStyles, Grid, TextField, Button, Typography, Box } from '@material-ui/core';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import axios from 'axios';
 
 class Flow extends Component {
     constructor(props) {
         super(props)
-        this.state = {
-            dropList: ['drop 1', 'drop 2', 'drop 3', 'drop 4', 'drop 5', 'drop 6', 'drop 7', 'drop 8', 'drop 9'],
-            dragList: ['drag 1', 'drag 2', 'drag 3']
-        }
-        const grid = 8;
+        this.state = {};
+        this.data = this.props.history.location.value
+        const grid = 10;
         this.getItemStyle = (isDragging, draggableStyle) => ({
             // some basic styles to make the items look a bit nicer
             userSelect: 'none',
-            padding: '16px 16px 0px 16px',
-            margin: `0 0 ${grid}px 0`,
+            padding: `${grid}px ${grid}px`,
+            margin: `${grid}px ${grid}px`,
             color: 'black',
-            borderTop: '1px solid rgba(192,192,192,1)',
-            borderLeft: '1px solid rgba(192,192,192,1)',
-            borderRight: '1px solid rgba(192,192,192,1)',
+            border: '1px solid rgba(192,192,192,1)',
             boxShadow: '0px 0px 5px #DFE3E8',
             // change background colour if dragging
             background: isDragging ? 'lightgreen' : 'white',
@@ -33,10 +30,91 @@ class Flow extends Component {
             background: isDraggingOver ? 'lightblue' : 'white',
             minWidth: 200,
             wordBreak: 'break-word',
-            height: 'auto',
+            height: '100%',
             padding: 8,
             border: '1px solid rgba(0,0,0,0.26)'
         });
+        // a little function to help us with reordering the result
+        this.reorder = (list, startIndex, endIndex) => {
+            const result = Array.from(list);
+            const [removed] = result.splice(startIndex, 1);
+            result.splice(endIndex, 0, removed);
+            return result;
+        };
+
+        /**
+         * Moves an item from one list to another list.
+         */
+        this.move = (source, destination, droppableSource, droppableDestination) => {
+            const sourceClone = Array.from(source);
+            const destClone = Array.from(destination);
+            const [removed] = sourceClone.splice(droppableSource.index, 1);
+
+            destClone.splice(droppableDestination.index, 0, removed);
+
+            const result = {};
+            result[droppableSource.droppableId] = sourceClone;
+            result[droppableDestination.droppableId] = destClone;
+
+            return result;
+        };
+        _.bindAll(this, [
+            'onDragEnd',
+            'classifiedDrop',
+            'getList'
+        ]);
+    }
+
+    getList(id) {
+        return this.state[id.split('_')[0]];
+    }
+    classifiedDrop() {
+        const { data } = this.data;
+        const uniqueData = [...new Set(data.map(x => x.taskHead))];
+        uniqueData.forEach((val) => {
+            this.state[val] = [];
+        });
+        uniqueData.forEach((val) => {
+            data.forEach((det) => {
+                if (val === det.taskHead) {
+                    let result = this.state[val];
+                    result.push(det);
+                    this.setState({ [val]: result }, () => {
+                        console.log(this.state);
+                    });
+                }
+            })
+        });
+    }
+
+    onDragEnd(result) {
+        const { source, destination } = result;
+        // dropped outside the list
+        if (!destination) {
+            return;
+        }
+        if (source.droppableId === destination.droppableId) {
+            const items = this.reorder(
+                this.getList(source.droppableId),
+                source.index,
+                destination.index
+            );
+            this.setState({ [destination.droppableId.split('_')[0]]: items });
+        } else {
+            const results = this.move(
+                this.getList(source.droppableId),
+                this.getList(destination.droppableId),
+                source,
+                destination
+            );
+            Object.keys(results).map(val => {
+                this.setState({ [val.split('_')[0]]: results[val] });
+            });
+        }
+    };
+
+    componentDidMount() {
+        this.classifiedDrop();
     }
 
     render() {
@@ -55,10 +133,11 @@ class Flow extends Component {
                         display: 'flex',
                         zIndex: 2,
                         position: 'relative',
-                        marginTop: 50
+                        marginTop: 50,
+                        justifyContent: 'center'
                     }}
                 >
-                    {this.state.dropList.map((val, i) => {
+                    {Object.keys(this.state).map((val, i) => {
                         return (
                             <div
                                 keys={val + i}
@@ -88,23 +167,25 @@ class Flow extends Component {
                     style={{
                         display: 'flex',
                         width: '100%',
-                        minHeight: 300
+                        maxHeight: '80%',
+                        overflow: 'auto',
+                        justifyContent: 'center'
                     }}
                 >
                     <DragDropContext onDragEnd={this.onDragEnd}>
-                        {this.state.dropList.map((value, i) => {
+                        {Object.keys(this.state).map((value, i) => {
                             return (<Droppable
 
-                                droppableId={value}
+                                droppableId={value + '_' + i}
                                 key={value + i}>
                                 {(provided, snapshot) => (
                                     <div
                                         ref={provided.innerRef}
                                         style={this.getListStyle(snapshot.isDraggingOver)}>
-                                        {this.state.dragList.map((item, index) => (
+                                        {this.state[value].map((item, index) => (
                                             <Draggable
-                                                key={item + value}
-                                                draggableId={item + index + value}
+                                                key={item.taskDetails + '_' + value + '_' + index}
+                                                draggableId={item.taskDetails + '_' + value + '_' + index}
                                                 index={index}>
                                                 {(provided, snapshot) => (
                                                     <div
@@ -115,7 +196,7 @@ class Flow extends Component {
                                                             snapshot.isDragging,
                                                             provided.draggableProps.style
                                                         )}>
-                                                        {item}
+                                                        {item.taskDetails}
                                                     </div>
                                                 )}
                                             </Draggable>

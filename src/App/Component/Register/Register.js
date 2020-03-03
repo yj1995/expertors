@@ -6,7 +6,6 @@ import { styles } from '../styles';
 import schema from './schema';
 import validate from 'validate.js';
 import axios from 'axios';
-import { makeid } from '../../random';
 
 class Register extends Component {
     constructor(props) {

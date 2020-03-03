@@ -11,7 +11,16 @@ const styles = theme => ({
     },
     AdminTop: {
         backgroundColor: '#1fc8db',
-        height: 50
+        height: 50,
+        position: 'fixed',
+        width: '100%',
+        zIndex: 100
+    },
+    AdminAdd: {
+        position: 'fixed',
+        width: '100%',
+        zIndex: 100,
+        marginTop: 50
     },
     AdminTitle: {
         height: '100%',

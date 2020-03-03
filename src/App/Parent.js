@@ -25,13 +25,14 @@ class Parent extends Component {
     return (
       <div className='Parent' style={{
         width: '100%',
-        height: window.innerHeight,
+        height: window.innerHeight - 16,
         position: 'relative',
         fontSize: '1.5rem',
         fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
         fontWeight: 400,
         lineHeight: 1.5,
         letterSpacing: '0.00938em',
+        overflow: 'hidden'
       }}>
         {/* <Start /> */}
         <BrowserRouter>
