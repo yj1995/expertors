@@ -36,15 +36,10 @@ class Register extends Component {
 
         _.bindAll(this, [
             'submit',
-            'clear',
             'validateForm',
             'handleFieldChange'
         ]);
     }
-
-    // clear() {
-
-    // }
 
     validateForm() {
         _.defer(() => {
