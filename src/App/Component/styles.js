@@ -34,8 +34,9 @@ const styles = theme => ({
         left: 0,
         width: '100%',
         height: '100%',
-        backgroundColor: 'black',
-        opacity: 0.7
+        backgroundColor: 'white',
+        opacity: 1,
+        zIndex: 200
     },
     EditName: {
         position: 'relative',
@@ -45,7 +46,7 @@ const styles = theme => ({
         padding: 10,
         textAlign: 'center',
         left: '50%',
-        background: 'white',
+        background: '#2196F3',
         transform: 'translate(-50%,-50%)'
     },
     EditNameInput: {
@@ -75,6 +76,14 @@ const styles = theme => ({
         left: 0,
         width: '100%',
         background: '#1fc8db'
+    },
+    progressWrapper: {
+        display: 'block',
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: 'white'
     }
 });
 export { styles };

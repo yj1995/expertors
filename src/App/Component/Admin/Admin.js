@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { Paper, withStyles, Grid, TextField, Button, Typography, Box } from '@material-ui/core';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { Paper, withStyles, Grid, TextField, Button, Typography, Box, CircularProgress } from '@material-ui/core';
 import { Delete, Edit, Face, AlternateEmail } from '@material-ui/icons';
 import _ from 'lodash';
 import { styles } from '../styles';
@@ -31,6 +30,7 @@ class Admin extends Component {
                 email: null
             },
             isValid: false,
+            isLoading: true
         }
         this.selectTile = '';
         _.bindAll(this, [
@@ -56,7 +56,7 @@ class Admin extends Component {
         const value = {
             managerName: data,
             AdminId: this.AdminId,
-            data: []
+            data: {}
         };
         Manager.push(value);
         axios.post(`http://localhost:3000/api/addManager`, {
@@ -221,7 +221,7 @@ class Admin extends Component {
     select(e) {
         e.preventDefault();
         this.selectTile = e.currentTarget.getAttribute('type');
-        console.log(e.currentTarget.getAttribute('type'));
+
         if (e.currentTarget.getAttribute('id') === 'edit') {
             this.edit(e);
         } else if (e.currentTarget.getAttribute('id') === 'delete') {
@@ -230,7 +230,6 @@ class Admin extends Component {
             let pathName = window.location.pathname;
             pathName = '';
             const value = _.find(this.state.Manager, (val) => {
-                console.log(val._id, 'asdghgads', this.selectTile);
                 return val._id === this.selectTile;
             })
             this.props.history.push({
@@ -255,60 +254,62 @@ class Admin extends Component {
                 const Manager = _.filter(res.data, (val, i) => {
                     return val.AdminId === this.AdminId
                 })
-                console.log(Manager);
-                this.setState({ Manager });
+                this.setState({ Manager, isLoading: false });
             });
     }
 
     render() {
         const { classes } = this.props;
         return (
-            <React.Fragment>
-                <div className={classes.AdminTop}>
-                    <Grid container spacing={8} alignItems="center" className={classes.AdminTitle}>
-                        Admin Portal
+            !this.state.isLoading ?
+                <React.Fragment>
+                    <div className={classes.AdminTop}>
+                        <Grid container spacing={8} alignItems="center" className={classes.AdminTitle}>
+                            Admin Portal
                 </Grid>
-                </div>
-                <div className={classes.AdminAdd}>
-                    <Grid container spacing={8} alignItems="center" className={classes.AdminTitle} style={{ height: '100%' }}>
-                        List of Manager
+                    </div>
+                    <div className={classes.AdminAdd}>
+                        <Grid container spacing={8} alignItems="center" className={classes.AdminTitle} style={{ height: '100%' }}>
+                            List of Manager
                         <Button variant="outlined" color="primary" style={{ textTransform: "none" }} className={classes.buttonStyle} id='Add' onClick={this.add}>Add New Manager</Button>
-                    </Grid>
-                </div>
-                <Box
-                    display="flex"
-                    flexWrap="wrap"
-                    p={1}
-                    m={1}
-                    css={{ minWidth: 300, position: 'relative', top: 119, maxHeight: '80%', overflow: 'auto' }}
-                >
-                    {this.state.Manager.length ?
-                        this.makeManagerList()
-                        : <div>No Manager Present</div>}
-                </Box>
-                <div className={classes.layout} style={{ display: this.state.edit ? 'block' : 'none' }}>
-                    <div className={classes.EditName}>
-                        Enter New Manager Name
+                        </Grid>
+                    </div>
+                    <Box
+                        display="flex"
+                        flexWrap="wrap"
+                        p={1}
+                        m={1}
+                        css={{ minWidth: 300, position: 'relative', top: 119, maxHeight: '80%', overflow: 'auto' }}
+                    >
+                        {this.state.Manager.length ?
+                            this.makeManagerList()
+                            : <div>No Manager Present</div>}
+                    </Box>
+                    <div className={classes.layout} style={{ display: this.state.edit ? 'block' : 'none' }}>
+                        <div className={classes.EditName}>
+                            Enter New Manager Name
                         <input className={classes.EditNameInput} placeholder='Enter Name' onChange={this.changeHandler} />
-                        <div className={classes.buttonLayout}>
-                            <Button variant="outlined" color="primary" style={{ textTransform: "none" }} disabled={this.state.disable} className={classes.buttonStyle} onClick={this.save}>SAVE</Button>
-                            <Button variant="outlined" color="primary" style={{ textTransform: "none" }} className={classes.buttonStyle} id='edit' onClick={this.cancel}>CANCEL</Button>
+                            <div className={classes.buttonLayout}>
+                                <Button variant="outlined" color="primary" style={{ textTransform: "none" }} disabled={this.state.disable} className={classes.buttonStyle} onClick={this.save}>SAVE</Button>
+                                <Button variant="outlined" color="primary" style={{ textTransform: "none" }} className={classes.buttonStyle} id='edit' onClick={this.cancel}>CANCEL</Button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div className={classes.layout} style={{ display: this.state.delete ? 'block' : 'none' }}>
-                    <div className={classes.EditName}>
-                        ARE YOU SURE TO DELETE
+                    <div className={classes.layout} style={{ display: this.state.delete ? 'block' : 'none' }}>
+                        <div className={classes.EditName}>
+                            ARE YOU SURE TO DELETE
                         <div className={classes.buttonLayout}>
-                            <Button variant="outlined" color="primary" style={{ textTransform: "none" }} className={classes.buttonStyle} onClick={this.ok}>OK</Button>
-                            <Button variant="outlined" color="primary" style={{ textTransform: "none" }} className={classes.buttonStyle} id='delete' onClick={this.cancel}>CANCEL</Button>
+                                <Button variant="outlined" color="primary" style={{ textTransform: "none" }} className={classes.buttonStyle} onClick={this.ok}>OK</Button>
+                                <Button variant="outlined" color="primary" style={{ textTransform: "none" }} className={classes.buttonStyle} id='delete' onClick={this.cancel}>CANCEL</Button>
+                            </div>
                         </div>
                     </div>
+                    <div className={classes.layout} style={{ display: this.state.add ? 'block' : 'none' }}>
+                        {this.register(classes)}
+                    </div>
+                </React.Fragment> : <div className={classes.progressWrapper}>
+                    <CircularProgress />
                 </div>
-                <div className={classes.layout} style={{ display: this.state.add ? 'block' : 'none' }}>
-                    {this.register(classes)}
-                </div>
-            </React.Fragment>
         );
     };
 }

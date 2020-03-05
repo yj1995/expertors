@@ -42,9 +42,9 @@ class Register extends Component {
         ]);
     }
 
-    clear() {
-        console.log('clear');
-    }
+    // clear() {
+
+    // }
 
     validateForm() {
         _.defer(() => {
@@ -70,22 +70,18 @@ class Register extends Component {
 
     submit() {
         let count = 0;
-        console.log(this.state.data);
         this.state.data.forEach((val, i) => {
-            console.log(val.username === this.state.values.username, val.username);
             if (val.username === this.state.values.username) {
                 count++;
             }
         });
         if (!count) {
             if (this.state.values.rematch === this.state.values.password) {
-                const body = { username: this.state.values.username, password: this.state.values.password, _id: makeid(20) };
-                console.log(body);
+                const body = { username: this.state.values.username, password: this.state.values.password };
                 axios.post(`http://localhost:3000/api/register`, {
                     body
                 })
                     .then((res) => {
-                        console.log(res);
                         let pathName = window.location.pathname;
                         pathName = '';
                         this.props.history.push({
@@ -106,7 +102,6 @@ class Register extends Component {
     componentDidMount() {
         axios.get(`http://localhost:3000/api/login`)
             .then((res) => {
-                console.log(res.data);
                 this.setState({ data: res.data });
             });
     }
@@ -203,7 +198,7 @@ class Register extends Component {
                     </Grid>
                     <Grid container justify="center" style={{ marginTop: '10px' }}>
                         <Button variant="outlined" color="primary" style={{ textTransform: "none" }} onClick={this.submit} disabled={!isValid}>Submit</Button>
-                        <Button variant="outlined" color="primary" style={{ textTransform: "none", marginLeft: 15 }} onClick={this.clear}>Clear</Button>
+                        {/* <Button variant="outlined" color="primary" style={{ textTransform: "none", marginLeft: 15 }} onClick={this.clear}>Clear</Button> */}
                     </Grid>
                 </div>
             </Paper>

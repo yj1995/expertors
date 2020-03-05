@@ -76,7 +76,7 @@ router.post('/deleteManager', (req, res, next) => {
     mongoose.connect(url, options, function (err, db) {
         assert.equal(null, err);
         let cursor = db.collection('Manager');
-        cursor.deleteOne({ _id:  mongoose.Types.ObjectId(req.body._id) }, (err, result) => {
+        cursor.deleteOne({ _id: mongoose.Types.ObjectId(req.body._id) }, (err, result) => {
             assert.equal(null, err);
             res.send(result);
             db.close();
@@ -87,7 +87,6 @@ router.post('/deleteManager', (req, res, next) => {
 router.post('/updateManager', (req, res, next) => {
     mongoose.connect(url, options, function (err, db) {
         assert.equal(null, err);
-        console.log(req.body);
         let _id = req.body._id;
         let set = {
             data: req.body.data
@@ -96,6 +95,21 @@ router.post('/updateManager', (req, res, next) => {
         cursor.updateOne({ _id }, { $set: set }, (err, result) => {
             assert.equal(null, err);
             res.send('update');
+            db.close();
+        });
+    })
+});
+
+router.post('/updateManagerData', (req, res, next) => {
+    mongoose.connect(url, options, function (err, db) {
+        assert.equal(null, err);
+        let set = {
+            data: req.body.data
+        };
+        let cursor = db.collection('Manager');
+        cursor.updateOne({ _id: mongoose.Types.ObjectId(req.body._id) }, { $set: set }, (err, result) => {
+            assert.equal(null, err);
+            res.send(result);
             db.close();
         });
     })

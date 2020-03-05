@@ -4,7 +4,7 @@ let Schema = mongoose.Schema;
 const todo = new Schema({
   managerName: String,
   AdminId: String,
-  data: Array,
+  data: Object,
   managerId: String,
 }, { collection: 'Manager', timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }, toObject: { virtuals: true }, toJSON: { virtuals: true } });
 

@@ -41,12 +41,6 @@ class Parent extends Component {
             <Route path={`${pathName}Register`} component={Register} />
             <Route path={`${pathName}Admin`} component={Admin} />
             <Route path={`${pathName}Flow`} component={Flow} />
-            {/* <Route path={`${pathName}CreateRoom`} component={CreateRoom} />
-            <Route path={`${pathName}JoinRoom`} component={JoinRoom} />
-            <Route path={`${pathName}PlayerInfo`} component={PlayerInfo} />
-            <Route path={`${pathName}waitRoom`} component={waitRoom} />
-            <Route path={`${pathName}boardServer`} component={boardServer} />
-            <Route path={`${pathName}Board`} component={Board} /> */}
           </Switch>
         </BrowserRouter>
       </div>

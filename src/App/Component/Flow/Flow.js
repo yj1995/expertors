@@ -1,15 +1,22 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
 import { styles } from '../styles';
-import { Paper, withStyles, Grid, TextField, Button, Typography, Box } from '@material-ui/core';
+import { withStyles, Grid, TextField, Button, CircularProgress } from '@material-ui/core';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios from 'axios';
 
 class Flow extends Component {
     constructor(props) {
         super(props)
-        this.state = {};
-        this.data = this.props.history.location.value
+        this.data = this.props.history.location.value;
+        this.state = {
+            flow: false,
+            task: false,
+            layerOut: false,
+            disable: true,
+            data: this.data.data,
+            isLoading: false
+        };
         const grid = 10;
         this.getItemStyle = (isDragging, draggableStyle) => ({
             // some basic styles to make the items look a bit nicer
@@ -52,7 +59,7 @@ class Flow extends Component {
 
             destClone.splice(droppableDestination.index, 0, removed);
 
-            const result = {};
+            const result = [];
             result[droppableSource.droppableId] = sourceClone;
             result[droppableDestination.droppableId] = destClone;
 
@@ -60,35 +67,223 @@ class Flow extends Component {
         };
         _.bindAll(this, [
             'onDragEnd',
-            'classifiedDrop',
-            'getList'
+            'getList',
+            'dropTop',
+            'dropData',
+            'addFlow',
+            'addTask',
+            'makeFlow',
+            'makeTask',
+            'cancel',
+            'changeHandler',
+            'save'
         ]);
     }
 
-    getList(id) {
-        return this.state[id.split('_')[0]];
-    }
-    classifiedDrop() {
-        const { data } = this.data;
-        const uniqueData = [...new Set(data.map(x => x.taskHead))];
-        uniqueData.forEach((val) => {
-            this.state[val] = [];
-        });
-        uniqueData.forEach((val) => {
-            data.forEach((det) => {
-                if (val === det.taskHead) {
-                    let result = this.state[val];
-                    result.push(det);
-                    this.setState({ [val]: result }, () => {
-                        console.log(this.state);
-                    });
-                }
-            })
+    save(e) {
+        const type = e.currentTarget.getAttribute('id');
+        const input = document.querySelector('input').value;
+        const data = this.state.data;
+        if (type === 'flow') {
+            data[input] = [];
+        } else {
+            const select = document.querySelector('select').value;
+            data[select].push(input);
+        }
+        this.setState({ [type]: false, isLoading: true })
+        axios.post(`http://localhost:3000/api/updateManagerData`, {
+            data,
+            _id: this.data._id
+        }).then((res) => {
+            this.setState({ data, isLoading: false });
         });
     }
 
+    cancel(e) {
+        const type = e.currentTarget.getAttribute('id');
+        this.setState({ [type]: false });
+    }
+
+    changeHandler(e) {
+        const length = e.target.value;
+        if (length) {
+            this.setState({ disable: false });
+        } else {
+            this.setState({ disable: true });
+        }
+    }
+
+    makeFlow(classes) {
+        return (
+            <div className={classes.layout}>
+                <div className={classes.EditName}>
+                    Enter New Task Flow Name
+                <input className={classes.EditNameInput} placeholder='Enter Task Flow Name' onChange={this.changeHandler} />
+                    <div className={classes.buttonLayout}>
+                        <Button variant="outlined" color="primary" style={{ textTransform: "none" }} disabled={this.state.disable} id='flow' className={classes.buttonStyle} onClick={this.save}>SAVE</Button>
+                        <Button variant="outlined" color="primary" style={{ textTransform: "none" }} className={classes.buttonStyle} id='flow' onClick={this.cancel}>CANCEL</Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    makeTask(classes) {
+        return (
+            <div className={classes.layout}>
+                <div className={classes.EditName}>
+                    Enter New Task
+                <input className={classes.EditNameInput} placeholder='Enter Task Name' onChange={this.changeHandler} />
+                    {/* <input className={classes.EditNameInput} placeholder='Enter Task Flow Name' onChange={this.changeHandler} /> */}
+                    <div className={classes.fields}>
+                        <TextField
+                            label="Select Task Flow"
+                            margin="dense"
+                            onChange={this.changeHandler}
+                            select
+                            SelectProps={{ native: true, style: { height: 40, width: 247, background: 'white', fontSize: 14 } }}
+                            InputLabelProps={{ shrink: true, style: { padding: '8px 0px' } }}
+                            variant="outlined">
+                            {Object.keys(this.state.data).map((option, i) => (
+                                <option
+                                    key={option + i}
+                                    value={option}
+                                    style={{ margin: 10, fontSize: 16 }}
+                                >
+                                    {option}
+                                </option>
+                            ))}
+                        </TextField>
+                    </div>
+                    <div className={classes.buttonLayout}>
+                        <Button variant="outlined" color="primary" style={{ textTransform: "none" }} id='task' disabled={this.state.disable} className={classes.buttonStyle} onClick={this.save}>SAVE</Button>
+                        <Button variant="outlined" color="primary" style={{ textTransform: "none" }} className={classes.buttonStyle} id='task' onClick={this.cancel}>CANCEL</Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    addFlow() {
+        this.setState({ flow: true });
+    }
+
+    addTask() {
+        this.setState({ task: true });
+    }
+
+    dropTop() {
+        return (
+            <div
+                className="pipelineTop"
+                style={{
+                    display: 'flex',
+                    zIndex: 2,
+                    position: 'relative',
+                }}
+            >
+                {Object.keys(this.state.data).map((val, i) => {
+                    return (
+                        <div
+                            keys={val + i}
+                            style={{
+                                minWidth: 200,
+                                backgroundColor: 'rgb(72, 133, 237)',
+                                padding: 8,
+                                wordBreak: 'break-word',
+                                border: '1px solid rgba(192,192,192,1)',
+                                color: 'white'
+                            }}
+                        >
+                            <div
+                                style={{
+                                    position: 'relative',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)'
+                                }}
+                            >
+                                {val}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    }
+
+    dropData() {
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    width: '100%',
+                }}
+            >
+
+                <DragDropContext onDragEnd={this.onDragEnd}>
+                    {Object.keys(this.state.data).map((value, i) => {
+                        return (<Droppable
+
+                            droppableId={value}
+                            key={value + i}>
+                            {(provided, snapshot) => (
+                                <div
+                                    ref={provided.innerRef}
+                                    style={this.getListStyle(snapshot.isDraggingOver)}>
+                                    {this.state.data[value].map((item, index) => (
+                                        <Draggable
+                                            key={item + '_' + value + '_' + index}
+                                            draggableId={item + '_' + value + '_' + index}
+                                            index={index}>
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    {...provided.dragHandleProps}
+                                                    style={this.getItemStyle(
+                                                        snapshot.isDragging,
+                                                        provided.draggableProps.style
+                                                    )}>
+                                                    {item}
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>)
+                    })}
+                </DragDropContext>
+            </div>
+        );
+    }
+
+    getList(id) {
+        return this.state.data[id.split('_')[0]];
+    }
+
+    // classifiedDrop() {
+    //     const { data } = this.data;
+    //     const uniqueData = [...new Set(data.map(x => x.taskHead))];
+    //     uniqueData.forEach((val) => {
+    //         this.state[val] = [];
+    //     });
+    //     uniqueData.forEach((val) => {
+    //         data.forEach((det) => {
+    //             if (val === det.taskHead) {
+    //                 let result = this.state[val];
+    //                 result.push(det);
+    //                 this.setState({ [val]: result }, () => {
+    //                 });
+    //             }
+    //         })
+    //     });
+    // }
+
     onDragEnd(result) {
         const { source, destination } = result;
+        const data = {};
         // dropped outside the list
         if (!destination) {
             return;
@@ -99,7 +294,13 @@ class Flow extends Component {
                 source.index,
                 destination.index
             );
-            this.setState({ [destination.droppableId.split('_')[0]]: items });
+            Object.keys(this.state.data).map(index => {
+                if (index === destination.droppableId) {
+                    data[index] = items;
+                } else {
+                    data[index] = this.state.data[index];
+                }
+            });
         } else {
             const results = this.move(
                 this.getList(source.droppableId),
@@ -107,107 +308,48 @@ class Flow extends Component {
                 source,
                 destination
             );
-            Object.keys(results).map(val => {
-                this.setState({ [val.split('_')[0]]: results[val] });
+            Object.keys(this.state.data).map(index => {
+                if (results[index]) {
+                    data[index] = results[index];
+                } else {
+                    data[index] = this.state.data[index];
+                }
             });
         }
+        this.setState({ data, isLoading: true });
+        axios.post(`http://localhost:3000/api/updateManagerData`, {
+            data,
+            _id: this.data._id
+        }).then((res) => {
+            this.setState({ isLoading: false });
+        })
     };
 
-    componentDidMount() {
-        this.classifiedDrop();
-    }
-
     render() {
-        const { history, classes } = this.props
-        console.log(this);
+        const { classes } = this.props
+        const { data } = this.state;
         return (
             <React.Fragment>
                 <div className={classes.FlowTop}>
                     <Grid container spacing={8} alignItems="center" className={classes.AdminTitle}>
-                        {history.location.select} Flow Chart
+                        {this.data.managerName} Flow Chart
                     </Grid>
                 </div>
-                <div
-                    className="pipelineTop"
-                    style={{
-                        display: 'flex',
-                        zIndex: 2,
-                        position: 'relative',
-                        marginTop: 50,
-                        justifyContent: 'center'
-                    }}
-                >
-                    {Object.keys(this.state).map((val, i) => {
-                        return (
-                            <div
-                                keys={val + i}
-                                style={{
-                                    minWidth: 200,
-                                    backgroundColor: 'rgb(72, 133, 237)',
-                                    padding: 8,
-                                    wordBreak: 'break-word',
-                                    border: '1px solid rgba(192,192,192,1)',
-                                    color: 'white'
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        position: 'relative',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)'
-                                    }}
-                                >
-                                    {val}
-                                </div>
-                            </div>
-                        );
-                    })}
+                <div className={classes.FlowTop} style={{ marginTop: 36 }}>
+                    <Grid container spacing={8} alignItems="center" className={classes.AdminTitle}>
+                        <Button className={classes.buttonStyle} variant="outlined" color="primary" style={{ textTransform: "none", background: 'white' }} onClick={this.addFlow}>Add New Task Flow</Button>
+                        <Button disabled={!Object.keys(data).length} className={classes.buttonStyle} variant="outlined" color="primary" style={{ textTransform: "none", background: 'white' }} onClick={this.addTask}>Add New Task</Button>
+                    </Grid>
                 </div>
-                <div
-                    style={{
-                        display: 'flex',
-                        width: '100%',
-                        maxHeight: '80%',
-                        overflow: 'auto',
-                        justifyContent: 'center'
-                    }}
-                >
-                    <DragDropContext onDragEnd={this.onDragEnd}>
-                        {Object.keys(this.state).map((value, i) => {
-                            return (<Droppable
-
-                                droppableId={value + '_' + i}
-                                key={value + i}>
-                                {(provided, snapshot) => (
-                                    <div
-                                        ref={provided.innerRef}
-                                        style={this.getListStyle(snapshot.isDraggingOver)}>
-                                        {this.state[value].map((item, index) => (
-                                            <Draggable
-                                                key={item.taskDetails + '_' + value + '_' + index}
-                                                draggableId={item.taskDetails + '_' + value + '_' + index}
-                                                index={index}>
-                                                {(provided, snapshot) => (
-                                                    <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                        style={this.getItemStyle(
-                                                            snapshot.isDragging,
-                                                            provided.draggableProps.style
-                                                        )}>
-                                                        {item.taskDetails}
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>)
-                        })}
-                    </DragDropContext>
+                <div style={{ minHeight: '82%', maxHeight: '82%', overflow: 'auto', marginTop: 100 }}>
+                    {Object.keys(data).length ? this.dropTop() : null}
+                    {Object.keys(data).length ? this.dropData() : <div style={{ textAlign: 'center' }}>NO Daily Task and Flow available </div>}
                 </div>
+                {this.state.flow ? this.makeFlow(classes) : null}
+                {this.state.task ? this.makeTask(classes) : null}
+                {this.state.isLoading ? <div style={{ width: '100%', height: '100%', zIndex: 300 }} className={classes.progressWrapper}>
+                    <CircularProgress style={{ position: 'absolute', top: '50%', left: '50%' }} />
+                </div> : null}
             </React.Fragment>
         );
     }
