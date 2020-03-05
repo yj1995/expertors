@@ -78,7 +78,7 @@ class Register extends Component {
         if (!count) {
             if (this.state.values.rematch === this.state.values.password) {
                 const body = { username: this.state.values.username, password: this.state.values.password };
-                axios.post(`http://localhost:3000/api/register`, {
+                axios.post(`api/register`, {
                     body
                 })
                     .then((res) => {
@@ -100,7 +100,7 @@ class Register extends Component {
     }
 
     componentDidMount() {
-        axios.get(`http://localhost:3000/api/login`)
+        axios.get(`api/login`)
             .then((res) => {
                 this.setState({ data: res.data });
             });

@@ -59,7 +59,7 @@ class Admin extends Component {
             data: {}
         };
         Manager.push(value);
-        axios.post(`http://localhost:3000/api/addManager`, {
+        axios.post(`api/addManager`, {
             body: value
         })
             .then((res) => {
@@ -163,7 +163,7 @@ class Admin extends Component {
         const list = [];
         Manager.forEach((val, i) => {
             if (val._id === this.selectTile) {
-                axios.post(`http://localhost:3000/api/deleteManager`, {
+                axios.post(`api/deleteManager`, {
                     _id: this.selectTile
                 });
             } else {
@@ -201,7 +201,7 @@ class Admin extends Component {
             if (val._id === this.selectTile) {
                 val.managerName = changeValue;
                 val._id = this.selectTile;
-                axios.post(`http://localhost:3000/api/updateManager`, {
+                axios.post(`api/updateManager`, {
                     _id: this.selectTile,
                     data: val
                 });
@@ -249,7 +249,7 @@ class Admin extends Component {
     }
 
     componentDidMount() {
-        axios.get(`http://localhost:3000/api/getManager`)
+        axios.get(`api/getManager`)
             .then((res) => {
                 const Manager = _.filter(res.data, (val, i) => {
                     return val.AdminId === this.AdminId

@@ -31,7 +31,7 @@ class login extends Component {
             }
         });
         if (count === data.length) {
-            axios.get(`http://localhost:3000/api/login`)
+            axios.get(`api/login`)
                 .then((res) => {
                     if (res.data.length) {
                         res.data.forEach((val, i) => {

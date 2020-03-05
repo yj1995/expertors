@@ -91,7 +91,7 @@ class Flow extends Component {
             data[select].push(input);
         }
         this.setState({ [type]: false, isLoading: true })
-        axios.post(`http://localhost:3000/api/updateManagerData`, {
+        axios.post(`api/updateManagerData`, {
             data,
             _id: this.data._id
         }).then((res) => {
@@ -317,7 +317,7 @@ class Flow extends Component {
             });
         }
         this.setState({ data, isLoading: true });
-        axios.post(`http://localhost:3000/api/updateManagerData`, {
+        axios.post(`api/updateManagerData`, {
             data,
             _id: this.data._id
         }).then((res) => {
