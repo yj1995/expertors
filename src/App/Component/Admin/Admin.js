@@ -179,12 +179,12 @@ class Admin extends Component {
             data.push(
                 <Box key={val._id + ' ' + i} p={1} style={{ margin: 10, minWidth: 150, textAlign: 'center' }} bgcolor="background.paper">
                     <Grid container alignItems="flex-end" style={{ width: '100%', justifiedContent: "center" }}>
-                        <Grid item style={{ width: '68%', wordBreak: 'break-word' }} type={val._id} onClick={this.select} id='items'>
+                        <Grid item style={{ width: '68%', wordBreak: 'break-word', cursor: 'pointer' }} type={val._id} onClick={this.select} id='items'>
                             {val.managerName}
                         </Grid>
                         <Grid item>
-                            <Edit onClick={this.select} type={val._id} id="edit" />
-                            <Delete onClick={this.select} type={val._id} id="delete" />
+                            <Edit style={{ cursor: 'pointer' }} onClick={this.select} type={val._id} id="edit" />
+                            <Delete style={{ cursor: 'pointer' }} onClick={this.select} type={val._id} id="delete" />
                         </Grid>
                     </Grid>
                 </Box>
